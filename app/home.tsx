@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Link from 'next/link'
 
 interface Account {
   name: string;
@@ -85,6 +86,10 @@ export default function Home() {
     }
   }
 
+  const calculateTotalBalance = () => {
+    return accounts.reduce((total, account) => total + account.balance, 0);
+  }
+
   return (
     <main className="min-h-screen flex flex-col p-4 sm:p-8 font-mono">
       <div className="flex justify-between items-center mb-8">
@@ -98,9 +103,15 @@ export default function Home() {
           </SheetTrigger>
           <SheetContent>
             <nav className="flex flex-col space-y-4">
-              <a href="#" className="text-lg">Home</a>
-              <a href="#" className="text-lg">About</a>
-              <a href="#" className="text-lg">Contact</a>
+              <Link href="/" className="text-lg">Home</Link>
+              <Link href="/transactions" className="text-lg">All Transactions</Link>
+              <div className="pt-4">
+                <h3 className="text-lg font-semibold">At a Glance</h3>
+                <p>Total Balance: {calculateTotalBalance().toFixed(8)} BTC</p>
+                {bitcoinPrice && (
+                  <p>USD Value: ${(calculateTotalBalance() * bitcoinPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                )}
+              </div>
               <div className="pt-4">
                 <h3 className="text-lg font-semibold">Add Account</h3>
                 <Input
@@ -150,7 +161,6 @@ export default function Home() {
         <div className="w-full">
           {selectedAccount && (
             <Alert>
-              <AlertTitle>Selected Account</AlertTitle>
               <AlertDescription>
                 {selectedAccount}: {accounts.find(a => a.name === selectedAccount)?.balance.toFixed(8)} BTC
               </AlertDescription>

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
+import { v4 as uuidv4 } from 'uuid'
 
 const dataPath = path.join(process.cwd(), 'data.json')
 
@@ -27,6 +28,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const data = readData()
     const { account, amount, btcPrice } = req.body
     const transaction = {
+      id: uuidv4(), // Add this line
       account,
       amount: parseFloat(amount),
       btcPrice: parseFloat(btcPrice),
