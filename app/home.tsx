@@ -49,8 +49,9 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 relative font-mono">
-      <div className="absolute top-4 right-4">
+    <main className="min-h-screen flex flex-col p-4 sm:p-8 font-mono">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold">Bitcoin DCA Calculator</h1>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon">
@@ -85,42 +86,51 @@ export default function Home() {
           </SheetContent>
         </Sheet>
       </div>
-      <h1 className="text-4xl font-bold">Bitcoin DCA Calculator</h1>
-      <Select onValueChange={setSelectedAccount} value={selectedAccount || undefined}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select Account" />
-        </SelectTrigger>
-        <SelectContent>
-          {accounts.map((account, index) => (
-            <SelectItem key={index} value={account.name}>{account.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {bitcoinPrice && (
-        <Alert>
-          <AlertTitle>Current Bitcoin Price</AlertTitle>
-          <AlertDescription>
-            ${bitcoinPrice.toLocaleString()}
-          </AlertDescription>
-        </Alert>
-      )}
-      {selectedAccount && (
-        <Alert>
-          <AlertTitle>Selected Account</AlertTitle>
-          <AlertDescription>
-            {selectedAccount}: {accounts.find(a => a.name === selectedAccount)?.balance.toFixed(8)} BTC
-          </AlertDescription>
-        </Alert>
-      )}
-      <div className="flex items-center space-x-2">
-        <Input
-          type="number"
-          placeholder="USD Amount to Stack"
-          value={usdAmount}
-          onChange={(e) => setUsdAmount(e.target.value)}
-          className="w-[180px]"
-        />
-        <Button onClick={stackSats}>Stack Now</Button>
+
+      <div className="flex-grow flex flex-col items-center justify-center space-y-4 w-[80%] sm:w-[600px] mx-auto">
+        <div className="w-full">
+          {bitcoinPrice && (
+            <Alert>
+              <AlertTitle>Current Bitcoin Price</AlertTitle>
+              <AlertDescription>
+                ${bitcoinPrice.toLocaleString()}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <Select onValueChange={setSelectedAccount} value={selectedAccount || undefined}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Account" />
+          </SelectTrigger>
+          <SelectContent>
+            {accounts.map((account, index) => (
+              <SelectItem key={index} value={account.name}>{account.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="w-full">
+          {selectedAccount && (
+            <Alert>
+              <AlertTitle>Selected Account</AlertTitle>
+              <AlertDescription>
+                {selectedAccount}: {accounts.find(a => a.name === selectedAccount)?.balance.toFixed(8)} BTC
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+          <Input
+            type="number"
+            placeholder="USD Amount to Stack"
+            value={usdAmount}
+            onChange={(e) => setUsdAmount(e.target.value)}
+            className="w-full sm:flex-grow"
+          />
+          <Button onClick={stackSats} className="w-full sm:w-auto">Stack Now</Button>
+        </div>
       </div>
     </main>
   )
