@@ -22,29 +22,66 @@ export default function Home() {
   const [usdAmount, setUsdAmount] = useState("")
 
   useEffect(() => {
+    fetchBitcoinPrice()
+    fetchAccounts()
+  }, [])
+
+  const fetchBitcoinPrice = () => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
       .then(response => response.json())
       .then(data => setBitcoinPrice(data.bitcoin.usd))
       .catch(error => console.error('Error fetching Bitcoin price:', error))
-  }, [])
+  }
+
+  const fetchAccounts = () => {
+    fetch('/api/accounts')
+      .then(response => response.json())
+      .then(data => setAccounts(data))
+      .catch(error => console.error('Error fetching accounts:', error))
+  }
 
   const addAccount = () => {
     if (newAccountName && newAccountBalance) {
-      setAccounts([...accounts, { name: newAccountName, balance: parseFloat(newAccountBalance) }])
-      setNewAccountName("")
-      setNewAccountBalance("")
+      const newAccount = { name: newAccountName, balance: parseFloat(newAccountBalance) }
+      fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAccount)
+      })
+        .then(response => response.json())
+        .then(() => {
+          fetchAccounts() // Refresh accounts after adding
+          setNewAccountName("")
+          setNewAccountBalance("")
+        })
+        .catch(error => console.error('Error adding account:', error))
     }
   }
 
   const stackSats = () => {
     if (selectedAccount && bitcoinPrice && usdAmount) {
       const btcAmount = parseFloat(usdAmount) / bitcoinPrice
-      setAccounts(accounts.map(account => 
-        account.name === selectedAccount 
-          ? { ...account, balance: account.balance + btcAmount }
-          : account
-      ))
-      setUsdAmount("")
+      const transaction = {
+        account: selectedAccount,
+        amount: parseFloat(usdAmount),
+        btcPrice: bitcoinPrice
+      }
+      fetch('/api/stack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transaction)
+      })
+        .then(response => response.json())
+        .then(() => {
+          setAccounts(accounts.map(account => 
+            account.name === selectedAccount 
+              ? { ...account, balance: account.balance + btcAmount }
+              : account
+          ))
+          setUsdAmount("")
+          fetchAccounts() // Refresh accounts after stacking
+        })
+        .catch(error => console.error('Error stacking sats:', error))
     }
   }
 
