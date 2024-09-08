@@ -132,6 +132,10 @@ export default function Home() {
           <Button onClick={stackSats} className="w-full sm:w-auto">Stack Now</Button>
         </div>
       </div>
+
+      <div className="mt-8 text-center text-sm text-muted-foreground">
+        Made by //AWB
+      </div>
     </main>
   )
 }
