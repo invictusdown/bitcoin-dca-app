@@ -1,9 +1,4 @@
 {
-  "accounts": [
-    {
-      "name": "Trev",
-      "balance": 0.1
-    }
-  ],
+  "accounts": [],
   "transactions": []
 }
