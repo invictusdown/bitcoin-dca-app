@@ -3,6 +3,24 @@ import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
+interface Data {
+  accounts: Account[];
+  transactions: Transaction[];
+}
+
+interface Account {
+  name: string;
+  balance: number;
+}
+
+interface Transaction {
+  id: string;
+  account: string;
+  amount: number;
+  btcPrice: number;
+  date: string;
+}
+
 const dataPath = path.join(process.cwd(), 'data.json')
 
 const readData = () => {
@@ -15,7 +33,7 @@ const readData = () => {
   }
 }
 
-const writeData = (data: any) => {
+const writeData = (data: Data) => {
   try {
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8')
   } catch (error) {
@@ -27,8 +45,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const data = readData()
     const { account, amount, btcPrice } = req.body
-    const transaction = {
-      id: uuidv4(), // Add this line
+    const transaction: Transaction = {
+      id: uuidv4(), // Add this line to generate a unique ID
       account,
       amount: parseFloat(amount),
       btcPrice: parseFloat(btcPrice),
@@ -37,9 +55,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     data.transactions.push(transaction)
     
     // Update account balance
-    const accountIndex = data.accounts.findIndex((a: any) => a.name === account)
+    const accountIndex = data.accounts.findIndex((a: Account) => a.name === account)
     if (accountIndex !== -1) {
-      data.accounts[accountIndex].balance += amount / btcPrice
+      data.accounts[accountIndex].balance += parseFloat(amount) / parseFloat(btcPrice)
     }
     
     writeData(data)

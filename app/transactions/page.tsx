@@ -27,8 +27,16 @@ export default function Transactions() {
       .catch(error => console.error('Error fetching transactions:', error))
   }
 
-  const removeTransaction = (id: string) => {
-    fetch(`/api/transactions/${id}`, { method: 'DELETE' })
+  const removeTransaction = (transaction: Transaction) => {
+    const queryParams = new URLSearchParams({
+      id: transaction.id || '',
+      account: transaction.account,
+      amount: transaction.amount.toString(),
+      btcPrice: transaction.btcPrice.toString(),
+      date: transaction.date
+    }).toString()
+
+    fetch(`/api/transactions?${queryParams}`, { method: 'DELETE' })
       .then(response => response.json())
       .then(() => {
         fetchTransactions() // Refresh transactions after removing
@@ -53,7 +61,7 @@ export default function Transactions() {
             </AlertDescription>
             <Button 
               className="text-red-500 hover:text-red-700 transition-colors p-0 bg-transparent hover:bg-transparent"
-              onClick={() => removeTransaction(transaction.id)}
+              onClick={() => removeTransaction(transaction)}
             >
               X
             </Button>

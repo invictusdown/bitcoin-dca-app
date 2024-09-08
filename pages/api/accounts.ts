@@ -4,6 +4,24 @@ import path from 'path'
 
 const dataPath = path.join(process.cwd(), 'data.json')
 
+interface Data {
+  accounts: Account[];
+  transactions: Transaction[];
+}
+
+interface Account {
+  name: string;
+  balance: number;
+}
+
+interface Transaction {
+  id: string;
+  account: string;
+  amount: number;
+  btcPrice: number;
+  date: string;
+}
+
 const readData = () => {
   try {
     const data = fs.readFileSync(dataPath, 'utf8')
@@ -14,7 +32,7 @@ const readData = () => {
   }
 }
 
-const writeData = (data: any) => {
+const writeData = (data: Data) => {
   try {
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8')
   } catch (error) {
