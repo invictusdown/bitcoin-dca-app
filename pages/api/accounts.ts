@@ -6,13 +6,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (req.method === 'GET') {
       console.log('Fetching accounts...')
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log('Supabase Key set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+
       const { data: accounts, error } = await supabase
         .from('accounts')
         .select('*')
 
       if (error) {
         console.error('Supabase error:', error)
-        res.status(500).json({ error: 'Supabase error', details: error.message })
+        res.status(500).json({ error: 'Supabase error', details: error.message, hint: error.hint, code: error.code })
         return
       }
 
@@ -37,6 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } catch (error: unknown) {
     console.error('API error:', error)
-    res.status(500).json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' })
+    res.status(500).json({ 
+      error: 'Internal Server Error', 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
   }
 }
