@@ -1,66 +1,35 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import fs from 'fs'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+import { supabase } from '../../lib/supabase'
 
-interface Data {
-  accounts: Account[];
-  transactions: Transaction[];
-}
-
-interface Account {
-  name: string;
-  balance: number;
-}
-
-interface Transaction {
-  id: string;
-  account: string;
-  amount: number;
-  btcPrice: number;
-  date: string;
-}
-
-const dataPath = path.join(process.cwd(), 'data.json')
-
-const readData = () => {
-  try {
-    const data = fs.readFileSync(dataPath, 'utf8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Error reading data:', error)
-    return { accounts: [], transactions: [] }
-  }
-}
-
-const writeData = (data: Data) => {
-  try {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8')
-  } catch (error) {
-    console.error('Error writing data:', error)
-  }
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const data = readData()
     const { account, amount, btcPrice } = req.body
-    const transaction: Transaction = {
-      id: uuidv4(), // Add this line to generate a unique ID
+    const transaction = {
       account,
       amount: parseFloat(amount),
       btcPrice: parseFloat(btcPrice),
       date: new Date().toISOString()
     }
-    data.transactions.push(transaction)
-    
-    // Update account balance
-    const accountIndex = data.accounts.findIndex((a: Account) => a.name === account)
-    if (accountIndex !== -1) {
-      data.accounts[accountIndex].balance += parseFloat(amount) / parseFloat(btcPrice)
+
+    const { data, error: insertError } = await supabase
+      .from('transactions')
+      .insert(transaction)
+      .single()
+
+    if (insertError) {
+      return res.status(500).json({ success: false, error: insertError.message })
     }
-    
-    writeData(data)
+
+    // Update account balance
+    const { error: updateError } = await supabase.rpc('update_account_balance', {
+      p_account: account,
+      p_amount: parseFloat(amount) / parseFloat(btcPrice)
+    })
+
+    if (updateError) {
+      return res.status(500).json({ success: false, error: updateError.message })
+    }
+
     res.status(200).json({ success: true })
   } else {
     res.setHeader('Allow', ['POST'])

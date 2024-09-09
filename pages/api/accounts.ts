@@ -1,55 +1,29 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import fs from 'fs'
-import path from 'path'
+import { supabase } from '../../lib/supabase'
 
-const dataPath = path.join(process.cwd(), 'data.json')
-
-interface Data {
-  accounts: Account[];
-  transactions: Transaction[];
-}
-
-interface Account {
-  name: string;
-  balance: number;
-}
-
-interface Transaction {
-  id: string;
-  account: string;
-  amount: number;
-  btcPrice: number;
-  date: string;
-}
-
-const readData = () => {
-  try {
-    const data = fs.readFileSync(dataPath, 'utf8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Error reading data:', error)
-    return { accounts: [], transactions: [] }
-  }
-}
-
-const writeData = (data: Data) => {
-  try {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8')
-  } catch (error) {
-    console.error('Error writing data:', error)
-  }
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    const data = readData()
-    res.status(200).json(data.accounts)
+    const { data: accounts, error } = await supabase
+      .from('accounts')
+      .select('*')
+
+    if (error) {
+      return res.status(500).json({ error: error.message })
+    }
+
+    res.status(200).json(accounts)
   } else if (req.method === 'POST') {
-    const data = readData()
     const newAccount = req.body
-    data.accounts.push(newAccount)
-    writeData(data)
-    res.status(200).json({ success: true })
+    const { data, error } = await supabase
+      .from('accounts')
+      .insert(newAccount)
+      .single()
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message })
+    }
+
+    res.status(200).json({ success: true, data })
   } else {
     res.setHeader('Allow', ['GET', 'POST'])
     res.status(405).end(`Method ${req.method} Not Allowed`)
