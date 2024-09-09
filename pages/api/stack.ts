@@ -26,13 +26,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Transaction inserted successfully')
 
       // Update account balance
+      console.log('Updating account balance:', { account, amount: parseFloat(amount) / parseFloat(btcPrice) })
       const { error: updateError } = await supabase.rpc('update_account_balance', {
         p_account: account,
         p_amount: parseFloat(amount) / parseFloat(btcPrice)
       })
 
       if (updateError) {
-        return res.status(500).json({ success: false, error: updateError.message })
+        console.error('Error updating account balance:', updateError)
+        return res.status(500).json({ 
+          success: false, 
+          error: updateError.message,
+          details: JSON.stringify(updateError)
+        })
       }
 
       console.log('Account balance updated successfully')
