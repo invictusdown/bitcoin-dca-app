@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Transaction {
   id: string;
@@ -15,6 +16,7 @@ interface Transaction {
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const router = useRouter()
 
   useEffect(() => {
     fetchTransactions()
@@ -28,18 +30,16 @@ export default function Transactions() {
   }
 
   const removeTransaction = (transaction: Transaction) => {
-    const queryParams = new URLSearchParams({
-      id: transaction.id || '',
-      account: transaction.account,
-      amount: transaction.amount.toString(),
-      btcPrice: transaction.btcPrice.toString(),
-      date: transaction.date
-    }).toString()
-
-    fetch(`/api/transactions?${queryParams}`, { method: 'DELETE' })
-      .then(response => response.json())
+    fetch(`/api/transactions?id=${transaction.id}`, { method: 'DELETE' })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to delete transaction')
+        }
+        return response.json()
+      })
       .then(() => {
         fetchTransactions() // Refresh transactions after removing
+        router.refresh() // Refresh the entire page to update "At a Glance" data
       })
       .catch(error => console.error('Error removing transaction:', error))
   }

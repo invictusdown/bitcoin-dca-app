@@ -28,10 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('transactions')
         .delete()
         .eq('id', id)
-        .single() as { 
-          data: { account: string; amount: number; btcPrice: number } | null; 
-          error: PostgrestError | null 
-        }
+        .single()
 
       if (deleteError) {
         return res.status(500).json({ success: false, error: deleteError.message })

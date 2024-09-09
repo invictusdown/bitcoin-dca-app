@@ -103,6 +103,11 @@ export default function Home() {
     return accounts.reduce((total, account) => total + account.balance, 0);
   }
 
+  const refreshData = () => {
+    fetchBitcoinPrice()
+    fetchAccounts()
+  }
+
   return (
     <main className="min-h-screen flex flex-col p-4 sm:p-8 font-mono">
       <div className="flex justify-between items-center mb-8">
@@ -118,6 +123,7 @@ export default function Home() {
             <nav className="flex flex-col space-y-4">
               <Link href="/" className="text-lg">Home</Link>
               <Link href="/transactions" className="text-lg">All Transactions</Link>
+              <Button onClick={refreshData} className="mt-2">Refresh Data</Button>
               <div className="pt-4">
                 <h3 className="text-lg font-semibold">At a Glance</h3>
                 <p>Total Balance: {calculateTotalBalance().toFixed(8)} BTC</p>
