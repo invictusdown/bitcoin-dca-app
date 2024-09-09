@@ -2,30 +2,41 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '../../lib/supabase'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    const { data: accounts, error } = await supabase
-      .from('accounts')
-      .select('*')
+  console.log('API route called:', req.method)
+  try {
+    if (req.method === 'GET') {
+      console.log('Fetching accounts...')
+      const { data: accounts, error } = await supabase
+        .from('accounts')
+        .select('*')
 
-    if (error) {
-      return res.status(500).json({ error: error.message })
+      if (error) {
+        console.error('Supabase error:', error)
+        res.status(500).json({ error: 'Supabase error', details: error.message })
+        return
+      }
+
+      console.log('Accounts fetched:', accounts)
+      res.status(200).json(accounts)
+    } else if (req.method === 'POST') {
+      const newAccount = req.body
+      const { data, error } = await supabase
+        .from('accounts')
+        .insert(newAccount)
+        .single()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      res.status(200).json({ success: true, data })
+    } else {
+      res.setHeader('Allow', ['GET', 'POST'])
+      res.status(405).json({ error: `Method ${req.method} Not Allowed` })
     }
-
-    res.status(200).json(accounts)
-  } else if (req.method === 'POST') {
-    const newAccount = req.body
-    const { data, error } = await supabase
-      .from('accounts')
-      .insert(newAccount)
-      .single()
-
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message })
-    }
-
-    res.status(200).json({ success: true, data })
-  } else {
-    res.setHeader('Allow', ['GET', 'POST'])
-    res.status(405).end(`Method ${req.method} Not Allowed`)
+  } catch (error: unknown) {
+    console.error('API error:', error)
+    res.status(500).json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' })
   }
 }

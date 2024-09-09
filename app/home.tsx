@@ -35,10 +35,23 @@ export default function Home() {
   }
 
   const fetchAccounts = () => {
+    console.log('Fetching accounts...')
     fetch('/api/accounts')
-      .then(response => response.json())
-      .then(data => setAccounts(data))
-      .catch(error => console.error('Error fetching accounts:', error))
+      .then(response => {
+        console.log('Response status:', response.status)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then(data => {
+        console.log('Accounts data:', data)
+        setAccounts(data)
+      })
+      .catch(error => {
+        console.error('Error fetching accounts:', error)
+        // Optionally, set an error state here to display to the user
+      })
   }
 
   const addAccount = () => {
