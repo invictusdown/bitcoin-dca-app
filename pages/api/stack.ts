@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       date: new Date().toISOString()
     }
 
-    const { data, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('transactions')
       .insert(transaction)
       .single()

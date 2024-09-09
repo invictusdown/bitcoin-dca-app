@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '../../lib/supabase'
+import { PostgrestError } from '@supabase/supabase-js'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method, query } = req;
@@ -27,7 +28,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('transactions')
         .delete()
         .eq('id', id)
-        .single()
+        .single() as { 
+          data: { account: string; amount: number; btcPrice: number } | null; 
+          error: PostgrestError | null 
+        }
 
       if (deleteError) {
         return res.status(500).json({ success: false, error: deleteError.message })
