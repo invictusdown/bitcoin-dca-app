@@ -47,11 +47,15 @@ export default function Transactions() {
         return JSON.parse(responseText);
       })
       .then(data => {
-        console.log('Delete successful:', data);
-        setTransactions(prevTransactions => 
-          prevTransactions.filter(t => t.id !== transaction.id)
-        );
-        router.refresh();
+        if (data.success) {
+          console.log('Delete successful:', data);
+          setTransactions(prevTransactions => 
+            prevTransactions.filter(t => t.id !== transaction.id)
+          );
+          router.refresh();
+        } else {
+          throw new Error(data.error || 'Unknown error occurred');
+        }
       })
       .catch(error => {
         console.error('Error removing transaction:', error);

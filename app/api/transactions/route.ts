@@ -70,21 +70,17 @@ export async function DELETE(request: Request) {
 
   console.log('Transaction deleted:', deletedTransaction);
 
-  if (deletedTransaction) {
-    const { error: updateError } = await supabase.rpc('update_account_balance', {
-      p_account: (deletedTransaction as Transaction).account,
-      p_amount: -(deletedTransaction as Transaction).amount / (deletedTransaction as Transaction).btcPrice
-    });
+  // Even if deletedTransaction is null, we know we've successfully deleted it
+  const { error: updateError } = await supabase.rpc('update_account_balance', {
+    p_account: transactionToDelete.account,
+    p_amount: -(transactionToDelete.amount / transactionToDelete.btcPrice)
+  });
 
-    if (updateError) {
-      console.error('Error updating account balance:', updateError);
-      return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
-    }
-
-    console.log('Account balance updated successfully');
-    return NextResponse.json({ success: true });
-  } else {
-    console.error('Transaction not found');
-    return NextResponse.json({ success: false, error: 'Transaction not found' }, { status: 404 });
+  if (updateError) {
+    console.error('Error updating account balance:', updateError);
+    return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
   }
+
+  console.log('Account balance updated successfully');
+  return NextResponse.json({ success: true });
 }
