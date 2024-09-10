@@ -46,7 +46,7 @@ export default function Transactions() {
         setTransactions(prevTransactions => 
           prevTransactions.filter(t => t.id !== transaction.id)
         );
-        router.refresh();
+        router.refresh(); // This will trigger a re-fetch of the data
       })
       .catch(error => {
         console.error('Error removing transaction:', error);
