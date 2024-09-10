@@ -30,24 +30,27 @@ export default function Transactions() {
   }
 
   const removeTransaction = (transaction: Transaction) => {
+    console.log('Attempting to remove transaction:', transaction.id);
     fetch(`/api/transactions?id=${transaction.id}`, { method: 'DELETE' })
       .then(response => {
+        console.log('Delete response:', response.status, response.statusText);
         if (!response.ok) {
-          throw new Error('Failed to delete transaction')
+          return response.text().then(text => {
+            throw new Error(`Failed to delete transaction: ${response.status} ${response.statusText} ${text}`);
+          });
         }
-        return response.json()
+        return response.json();
       })
-      .then(() => {
-        // Update local state immediately
+      .then(data => {
+        console.log('Delete successful:', data);
         setTransactions(prevTransactions => 
           prevTransactions.filter(t => t.id !== transaction.id)
-        )
-        router.refresh() // Refresh the entire page to update "At a Glance" data
+        );
+        router.refresh();
       })
       .catch(error => {
-        console.error('Error removing transaction:', error)
-        // Optionally, show an error message to the user
-      })
+        console.error('Error removing transaction:', error);
+      });
   }
 
   return (
