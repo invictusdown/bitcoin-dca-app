@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 interface Transaction {
-  id: string;
+  id: number;  // Change this to number
   account: string;
   amount: number;
   btcPrice: number;
@@ -25,8 +25,11 @@ export default function Transactions() {
   const fetchTransactions = () => {
     fetch('/api/transactions')
       .then(response => response.json())
-      .then(data => setTransactions(data))
-      .catch(error => console.error('Error fetching transactions:', error))
+      .then(data => {
+        console.log('Transactions fetched:', data);
+        setTransactions(data);
+      })
+      .catch(error => console.error('Error fetching transactions:', error));
   }
 
   const removeTransaction = (transaction: Transaction) => {

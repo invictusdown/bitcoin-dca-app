@@ -10,6 +10,7 @@ interface Transaction {
 }
 
 export async function GET() {
+  console.log('GET request received for transactions');
   const { data: transactions, error: fetchError } = await supabase
     .from('transactions')
     .select('*');
@@ -19,6 +20,7 @@ export async function GET() {
     return NextResponse.json({ error: fetchError.message }, { status: 500 });
   }
   
+  console.log('Transactions retrieved:', transactions);
   return NextResponse.json(transactions);
 }
 
@@ -29,15 +31,36 @@ export async function DELETE(request: Request) {
 
   console.log('Transaction ID to delete:', id);
 
-  if (!id) {
+  if (!id || isNaN(parseInt(id))) {
     console.error('Invalid transaction ID');
     return NextResponse.json({ success: false, error: 'Invalid transaction ID' }, { status: 400 });
+  }
+
+  const numericId = parseInt(id);
+
+  // Log the transaction before deletion
+  const { data: transactionToDelete, error: fetchError } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('id', numericId)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching transaction to delete:', fetchError);
+    return NextResponse.json({ success: false, error: fetchError.message }, { status: 500 });
+  }
+
+  console.log('Transaction to delete:', transactionToDelete);
+
+  if (!transactionToDelete) {
+    console.error('Transaction not found');
+    return NextResponse.json({ success: false, error: 'Transaction not found' }, { status: 404 });
   }
 
   const { data: deletedTransaction, error: deleteError } = await supabase
     .from('transactions')
     .delete()
-    .eq('id', id)
+    .eq('id', numericId)
     .single();
 
   if (deleteError) {
@@ -45,8 +68,9 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: deleteError.message }, { status: 500 });
   }
 
+  console.log('Transaction deleted:', deletedTransaction);
+
   if (deletedTransaction) {
-    console.log('Transaction deleted:', deletedTransaction);
     const { error: updateError } = await supabase.rpc('update_account_balance', {
       p_account: (deletedTransaction as Transaction).account,
       p_amount: -(deletedTransaction as Transaction).amount / (deletedTransaction as Transaction).btcPrice
