@@ -32,24 +32,27 @@ export default function Transactions() {
   const removeTransaction = (transaction: Transaction) => {
     console.log('Attempting to remove transaction:', transaction.id);
     fetch(`/api/transactions?id=${transaction.id}`, { method: 'DELETE' })
-      .then(response => {
+      .then(async response => {
         console.log('Delete response:', response.status, response.statusText);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
         if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error(`Failed to delete transaction: ${response.status} ${response.statusText} ${text}`);
-          });
+          throw new Error(`Failed to delete transaction: ${response.status} ${response.statusText} ${responseText}`);
         }
-        return response.json();
+        
+        return JSON.parse(responseText);
       })
       .then(data => {
         console.log('Delete successful:', data);
         setTransactions(prevTransactions => 
           prevTransactions.filter(t => t.id !== transaction.id)
         );
-        router.refresh(); // This will trigger a re-fetch of the data
+        router.refresh();
       })
       .catch(error => {
         console.error('Error removing transaction:', error);
+        // Optionally, you can show an error message to the user here
       });
   }
 
