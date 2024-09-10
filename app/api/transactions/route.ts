@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
 interface Transaction {
-  id: string;
+  id: number;  // Changed to number to match the database type
   account: string;
   amount: number;
   btcPrice: number;
@@ -11,7 +11,7 @@ interface Transaction {
 
 export async function GET() {
   console.log('GET request received for transactions');
-  const { data: transactions, error: fetchError } = await supabase
+  const { data, error: fetchError } = await supabase
     .from('transactions')
     .select('*');
   
@@ -20,6 +20,7 @@ export async function GET() {
     return NextResponse.json({ error: fetchError.message }, { status: 500 });
   }
   
+  const transactions: Transaction[] = data || [];
   console.log('Transactions retrieved:', transactions);
   return NextResponse.json(transactions);
 }
@@ -50,9 +51,10 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: fetchError.message }, { status: 500 });
   }
 
-  console.log('Transaction to delete:', transactionToDelete);
+  const transaction = transactionToDelete as Transaction;
+  console.log('Transaction to delete:', transaction);
 
-  if (!transactionToDelete) {
+  if (!transaction) {
     console.error('Transaction not found');
     return NextResponse.json({ success: false, error: 'Transaction not found' }, { status: 404 });
   }
@@ -72,8 +74,8 @@ export async function DELETE(request: Request) {
 
   // Even if deletedTransaction is null, we know we've successfully deleted it
   const { error: updateError } = await supabase.rpc('update_account_balance', {
-    p_account: transactionToDelete.account,
-    p_amount: -(transactionToDelete.amount / transactionToDelete.btcPrice)
+    p_account: transaction.account,
+    p_amount: -(transaction.amount / transaction.btcPrice)
   });
 
   if (updateError) {
