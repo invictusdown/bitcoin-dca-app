@@ -38,10 +38,16 @@ export default function Transactions() {
         return response.json()
       })
       .then(() => {
-        fetchTransactions() // Refresh transactions after removing
+        // Update local state immediately
+        setTransactions(prevTransactions => 
+          prevTransactions.filter(t => t.id !== transaction.id)
+        )
         router.refresh() // Refresh the entire page to update "At a Glance" data
       })
-      .catch(error => console.error('Error removing transaction:', error))
+      .catch(error => {
+        console.error('Error removing transaction:', error)
+        // Optionally, show an error message to the user
+      })
   }
 
   return (
