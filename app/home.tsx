@@ -153,7 +153,7 @@ export default function Home() {
         </Sheet>
       </div>
 
-      <div className="flex-grow flex flex-col items-center justify-center space-y-4 w-[80%] sm:w-[600px] mx-auto">
+      <div className="flex-grow flex flex-col items-center justify-center space-y-4 w-[90%] sm:w-[600px] mx-auto">
         <div className="w-full">
           {bitcoinPrice && (
             <Alert>
