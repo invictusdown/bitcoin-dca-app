@@ -21,10 +21,29 @@ export default function Component() {
   const [newAccountBalance, setNewAccountBalance] = useState("")
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
   const [usdAmount, setUsdAmount] = useState("")
+  const [currentQuote, setCurrentQuote] = useState("")
+  const quotes = [
+    "There is no second best. - Michael Saylor",
+    "Bitcoin is a swarm of cyber hornets serving the goddess of wisdom, feeding on the fire of truth, exponentially growing ever smarter, faster, and stronger behind a wall of encrypted energy. - Michael Saylor",
+    "I think the internet is going to be one of the major forces for reducing the role of government. The one thing that's missing but that will soon be developed is a reliable e-cash. - Milton Friedman",
+    "Bitcoin is a technological tour de force. - Bill Gates",
+    "Bitcoin is a remarkable cryptographic achievement... The ability to create something which is not duplicable in the digital world has enormous value. - Eric Schmidt (former CEO of Google)",
+    "Bitcoin is a technological revolution that will transform the way we conduct transactions and store value. - Cathy Wood",
+    "Stay away from it. It's a mirage, basically. - Warren Buffett (as a contrarian view)",
+    "Bitcoin is the beginning of something great: a currency without a government, something necessary and imperative. - Nassim Taleb",
+    "I think the fact that within the Bitcoin universe an algorithm replaces the function of the government... is actually pretty cool. - Al Gore",
+    "Bitcoin is a currency outside of state control. That's a tremendous tool for peace. - Roger Ver"
+  ]
+
+  const selectRandomQuote = () => {
+    const randomIndex = Math.floor(Math.random() * quotes.length)
+    setCurrentQuote(quotes[randomIndex])
+  }
 
   useEffect(() => {
     fetchBitcoinPrice()
     fetchAccounts()
+    selectRandomQuote()
     const interval = setInterval(fetchBitcoinPrice, 60000) // Update price every minute
     return () => clearInterval(interval)
   }, [])
@@ -200,9 +219,47 @@ export default function Component() {
         </div>
       </div>
 
-      <div className="mt-8 text-center text-sm text-green-600 animate-pulse">
+      <div className="mt-8 min-h-16 flex items-center justify-center">
+        <div className="w-[90%] text-center text-sm text-green-500">
+          <TypingAnimation text={currentQuote} />
+        </div>
+      </div>
+
+      <div className="mt-4 text-center text-sm text-green-600 animate-pulse">
         Made by //AWB
       </div>
     </main>
+  )
+}
+
+function TypingAnimation({ text }: { text: string }) {
+  const [displayedText, setDisplayedText] = useState("")
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [showCursor, setShowCursor] = useState(true)
+
+  useEffect(() => {
+    if (currentIndex === 0) {
+      const cursorInterval = setInterval(() => {
+        setShowCursor(prev => !prev)
+      }, 500)
+      return () => clearInterval(cursorInterval)
+    }
+  }, [currentIndex])
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText(prev => prev + text[currentIndex])
+        setCurrentIndex(prev => prev + 1)
+      }, 50) // Adjust typing speed here
+      return () => clearTimeout(timeout)
+    }
+  }, [text, currentIndex])
+
+  return (
+    <div className="whitespace-normal overflow-hidden">
+      {currentIndex === 0 && showCursor ? ">_" : displayedText}
+      {currentIndex > 0 && showCursor && <span className="animate-blink">|</span>}
+    </div>
   )
 }
